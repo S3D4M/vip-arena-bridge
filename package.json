@@ -1,0 +1,8 @@
+{
+  "name": "vip-arena-bridge",
+  "version": "1.0.0",
+  "description": "Bridge: TikTok LIVE (prnk911) -> VIP Arena game",
+  "main": "server.js",
+  "scripts": { "start": "node server.js", "mock": "node server.js --mock" },
+  "dependencies": { "tiktok-live-connector": "^2.5.0", "ws": "^8.18.0" }
+}

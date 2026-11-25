@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: vip-arena-bridge
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: TIKTOK_USER
+        value: prnk911
+      - key: CONTROL_KEY
+        generateValue: true
