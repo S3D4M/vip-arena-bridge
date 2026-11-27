@@ -143,6 +143,8 @@ if(CTL)document.body.classList.add('ctl');
 const PTS={join:2,comment:5,like:1,share:20,follow:30,gift:10};
 const LBL={join:'دخل',comment:'علّق',like:'أعجبه',share:'شارك البث',follow:'تابع',gift:'أرسل وردة'};
 let P={},hearts=0,real=false,timer=null,ch=null,chT=null,lastLead=null,pinnedJoin=null,pinnedJoinT=null;
+let rotationOffset=0;
+const ROTATION_MS=60000;
 const $=id=>document.getElementById(id);
 let AC=null,sndOn=true,lastLike=0,seen={},tEl=null,en=0,frenzy=false,fzT=null,lastMs=0;
 function noise(d,v){const a=ac();if(!a||!sndOn)return;const n=Math.floor(a.sampleRate*d),b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type='bandpass';f.frequency.value=1800;s.buffer=b;g.gain.value=v;s.connect(f);f.connect(g);g.connect(a.destination);s.start()}
@@ -225,8 +227,10 @@ function avatarFor(name){
 }
 function render(hot){
   const list=Object.values(P).sort((a,b)=>b.points-a.points);
-  const visible=list.slice(0,8);
-  if(pinnedJoin&&!visible.some(p=>p.name===pinnedJoin)&&P[pinnedJoin])visible.splice(7,1,P[pinnedJoin]);
+  const visible=[];
+  const shown=Math.min(8,list.length);
+  for(let i=0;i<shown;i++)visible.push(list[(rotationOffset+i)%list.length]);
+  if(pinnedJoin&&!visible.some(p=>p.name===pinnedJoin)&&P[pinnedJoin])visible[shown-1]=P[pinnedJoin];
   const g=$('grid');g.innerHTML='';
   for(let i=0;i<8;i++){
     const p=visible[i],d=document.createElement('div');
@@ -263,6 +267,14 @@ document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{
   ArenaEvent({type:b.dataset.t,user:$('u').value});
 });
 $('reset').onclick=()=>{P={};hearts=0;save();$('status').textContent='● جولة جديدة';render()};
+setInterval(()=>{
+  const total=Object.keys(P).length;
+  if(total>8){
+    rotationOffset=(rotationOffset+8)%total;
+    $('status').textContent='● 🔄 تبديل الخانات — فرصة جديدة للمشاركين';
+    render();
+  }
+},ROTATION_MS);
 $('mode').onclick=()=>{
   real=!real;
   $('mode').textContent=real?'بث حقيقي 🔴':'بث تجريبي 🟢';
