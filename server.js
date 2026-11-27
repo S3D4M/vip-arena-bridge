@@ -46,12 +46,29 @@ wss.on('connection', (ws, req) => {
 });
 
 // ---------- تحويل أحداث تيك توك ----------
+function firstImageUrl(v) {
+  if (!v) return undefined;
+  if (typeof v === 'string') return v;
+  if (Array.isArray(v)) {
+    for (const x of v) { const a = firstImageUrl(x); if (a) return a; }
+    return undefined;
+  }
+  if (typeof v === 'object') {
+    for (const k of ['urlList','urls','mUrls','url','uri']) {
+      const a = firstImageUrl(v[k]); if (a) return a;
+    }
+  }
+  return undefined;
+}
 function who(u) {
   u = u || {};
   const name = String(u.nickname || u.uniqueId || '').trim().slice(0, 24) || 'مجهول';
-  const a = (u.profilePicture && (u.profilePicture.urls || u.profilePicture.mUrls || u.profilePicture.url) || [])[0]
-    || (u.avatarThumb && (u.avatarThumb.urls || u.avatarThumb.mUrls || u.avatarThumb.urlList) || [])[0]
-    || u.profilePictureUrl;
+  const a = firstImageUrl(u.profilePictureUrls)
+    || firstImageUrl(u.profilePictureUrl)
+    || firstImageUrl(u.profilePicture)
+    || firstImageUrl(u.avatarThumb)
+    || firstImageUrl(u.avatarLarger)
+    || firstImageUrl(u.avatarMedium);
   const avatar = typeof a === 'string' && /^https:\/\/[^\s"'<>]+$/.test(a) ? a : undefined;
   return { user: name, avatar };
 }
