@@ -16,7 +16,9 @@ h1{font-size:15px;font-weight:900;margin-inline-end:auto;background:linear-gradi
 .pill.live{border-color:#3be39a;color:#3be39a}
 .bar{display:flex;justify-content:space-between;padding:3px 10px;font-size:11px;border-block:1px solid #3a2f12;color:#cfc3ff}
 .bar b{color:var(--gold)}
-.cond{padding:4px 8px;font-size:12px;min-height:24px;text-align:center;color:var(--gold);background:#150d33}
+.cond{padding:5px 10px;font-size:12px;min-height:58px;text-align:center;color:#fff;background:#150d33;border-block:1px solid #4a35a0;line-height:1.45}
+.cond strong{display:block;color:var(--gold);font-size:13px;margin-bottom:2px}
+.cond span{display:block;color:#eee1ff;font-size:11px}
 #grid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(4,1fr);gap:7px;padding:8px;background:linear-gradient(160deg,#3a1a80,#14082e 55%,#1d4a5c)}
 .slot{position:relative;border:2px dashed #4a35a0;border-radius:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:#0003;overflow:hidden;transition:.3s}
 .av{width:58px;height:58px;border-radius:50%;border:3px solid #3a2a8a;display:grid;place-items:center;font-size:20px;font-weight:900;color:#4a3aa0;overflow:hidden}
@@ -96,7 +98,7 @@ body.ctl #cp{display:block;flex:1;overflow:auto;padding:14px}
 </header>
 <div class="bar"><span id="status">● جاهز — جرّب الأحداث من الأسفل</span><span>⏳ الانتظار: <b id="wait">0</b></span></div>
 <div class="en"><i id="eni"></i></div>
-<div class="cond">🎯 شروط الدعم: تابع الحساب ▪ شارك البث ▪ تفاعل باللايك ▪ اكتب تعليقاً</div>
+<div class="cond"><strong>🎯 كيف تشارك وتدخل الساحة؟</strong><span>1) تابع الحساب • 2) شارك البث مع أصدقائك • 3) اضغط لايك • 4) اكتب تعليقًا — كل تفاعل يرفع نقاطك!</span></div>
 <div class="chal" id="chal"><div class="ct"></div><div class="pb"><i></i></div></div>
   <div class="top" id="top"><div class="av" id="tav"></div><div class="info"><div class="t1">👑 بطل الساحة — تابعوه!</div><div class="t2" id="tn"></div><div class="t1" id="tp"></div></div><div class="fb">➕ تابع</div></div>
 <div id="grid"></div>
@@ -284,9 +286,6 @@ $('auto').onclick=()=>{
   },650);
 };
 $('tap').onclick=()=>{ac();sfx('join');$('tap').remove()};
-const MSG=['🔥 ابقَ للنهاية — المتصدر يطلع بالصندوق الذهبي!','🔁 شارك البث وضاعف نقاطك!','❤️ كل لايك يرفعك درجة','💬 اكتب تعليقاً وادخل الساحة فوراً','➕ تابع الحساب المتصدر ليدعمك'];
-const cond=document.querySelector('.cond'),MSG0=cond.textContent;let mi=-1;
-setInterval(()=>{mi=(mi+1)%(MSG.length+1);cond.textContent=mi===MSG.length?MSG0:MSG[mi]},4500);
 $('snd').onclick=()=>{sndOn=!sndOn;$('snd').textContent=sndOn?'🔊':'🔇';if(sndOn){ac();sfx('join')}};
 $('chbtn').onclick=()=>{if(real){$('status').textContent='● الوضع الحقيقي: بانتظار الجسر...';return}startChal()};
 render();
