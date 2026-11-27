@@ -60,7 +60,7 @@ body.ctl #cp{display:block;flex:1;overflow:auto;padding:14px}
 .cg button{background:#2a1466;color:#fff;border:1px solid var(--vio);border-radius:14px;padding:14px 6px;font:inherit;font-size:15px;font-weight:700}
 .cg button:active{background:var(--pink)}
 .tap{position:fixed;inset:0;z-index:100;background:#000d;display:grid;place-items:center;text-align:center;font-size:24px;font-weight:900;line-height:1.8;color:var(--gold)}
-.top{display:none!important}
+.top{margin:4px 8px 0;padding:5px 8px;border:2px solid var(--gold);border-radius:18px;background:linear-gradient(135deg,#3a1a80,#1a0c3d);display:none;align-items:center;gap:8px;box-shadow:0 0 22px #ffd24a77}
 .top .av{width:52px;height:52px;border-color:var(--gold);flex:none}
 .top .info{flex:1;min-width:0}
 .top .t1{font-size:12px;color:var(--gold);font-weight:700}
@@ -98,7 +98,7 @@ body.ctl #cp{display:block;flex:1;overflow:auto;padding:14px}
 <div class="en"><i id="eni"></i></div>
 <div class="cond">🎯 شروط الدعم: تابع الحساب ▪ شارك البث ▪ تفاعل باللايك ▪ اكتب تعليقاً</div>
 <div class="chal" id="chal"><div class="ct"></div><div class="pb"><i></i></div></div>
-<div class="top" id="top"><div class="av" id="tav"></div><div class="info"><div class="t1">👑 المتصدر الآن — تابعوه!</div><div class="t2" id="tn"></div><div class="t1" id="tp"></div></div><div class="fb">➕ تابع</div></div>
+  <div class="top" id="top"><div class="av" id="tav"></div><div class="info"><div class="t1">👑 بطل الساحة — تابعوه!</div><div class="t2" id="tn"></div><div class="t1" id="tp"></div></div><div class="fb">➕ تابع</div></div>
 <div id="grid"></div>
 <details id="ctl">
   <summary>⚙️ لوحة التحكم والتجربة</summary>
@@ -140,13 +140,11 @@ body.ctl #cp{display:block;flex:1;overflow:auto;padding:14px}
 <script>
 const CTL=/^#control/.test(location.hash),DEMO=location.hash==='#demo',SK=DEMO?'vip-demo':'vip-live';
 if(CTL)document.body.classList.add('ctl');
-const PTS={join:2,comment:5,like:1,share:20,follow:30,gift:10};
+  const PTS={join:2,comment:5,like:1,share:20,follow:30,gift:10};
 const LBL={join:'دخل',comment:'علّق',like:'أعجبه',share:'شارك البث',follow:'تابع',gift:'أرسل وردة'};
 let P={},hearts=0,real=false,timer=null,ch=null,chT=null,lastLead=null,pinnedJoin=null,pinnedJoinT=null;
-let rotationOffset=0;
-const ROTATION_MS=60000;
 const $=id=>document.getElementById(id);
-let AC=null,sndOn=true,lastLike=0,seen={},tEl=null,en=0,frenzy=false,fzT=null,lastMs=0;
+let AC=null,sndOn=true,lastLike=0,seen={},eventIds=new Set(),tEl=null,en=0,frenzy=false,fzT=null,lastMs=0;
 function noise(d,v){const a=ac();if(!a||!sndOn)return;const n=Math.floor(a.sampleRate*d),b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type='bandpass';f.frequency.value=1800;s.buffer=b;g.gain.value=v;s.connect(f);f.connect(g);g.connect(a.destination);s.start()}
 function toast(html){if(tEl)tEl.remove();const d=document.createElement('div');d.className='wel';d.innerHTML=html;document.body.appendChild(d);tEl=d;setTimeout(()=>{if(tEl===d){d.remove();tEl=null}},2500)}
 function welcome(name,av){toast('<img alt="" src="'+(av||avatarFor(name))+'"><span>🎉 انضم <b></b></span>');tEl.querySelector('b').textContent=name;try{if(!speechSynthesis.speaking)say('أهلاً '+name)}catch(e){}}
@@ -179,11 +177,14 @@ function flash(){const f=document.createElement('div');f.className='flash';docum
 try{const s=JSON.parse(localStorage.getItem(SK)||'null');if(s){P=s.P||{};hearts=s.h||0}}catch(e){}
 function save(){try{localStorage.setItem(SK,JSON.stringify({P,h:hearts}))}catch(e){}}
 
-function ArenaEvent(e){ // يستقبل {type, user, count?} من تجريبي أو من جسر حقيقي
-  const name=(e.user||'').trim()||'مجهول';
-  const type=PTS[e.type]?e.type:'comment';if(e.real){lastReal=Date.now();netPaint()}
-  const n=e.count||1;
-  const isNew=!P[name];if(isNew){P[name]={name,points:0};pinnedJoin=name;clearTimeout(pinnedJoinT);pinnedJoinT=setTimeout(()=>{if(pinnedJoin===name){pinnedJoin=null;render()}},9000)}if(e.avatar)P[name].avatar=e.avatar;
+function ArenaEvent(e){ // يستقبل {type, user, count?, id?} من تجريبي أو من جسر حقيقي
+  if(!e||typeof e!=='object'||!PTS[e.type])return;
+  if(e.id){const id=String(e.id);if(eventIds.has(id))return;eventIds.add(id);if(eventIds.size>2000)eventIds.delete(eventIds.values().next().value)}
+  const name=String(e.user||'').trim().slice(0,24)||'مجهول';
+  const type=e.type;if(e.real){lastReal=Date.now();netPaint()}
+  const n=Math.max(1,Math.min(500,Math.floor(Number(e.count)||1)));
+  const isNew=!P[name];if(isNew){P[name]={name,points:0};}
+  if(e.avatar&&/^https:\/\/[^\s"'<>]+$/.test(String(e.avatar)))P[name].avatar=String(e.avatar);
   const mult=((ch&&type==='share')?2:1)*(frenzy?2:1);P[name].points+=PTS[type]*n*mult;
   if(type==='like')hearts+=n;
   $('status').textContent='● '+name+' '+LBL[type]+' (+'+PTS[type]*n*mult+')';
@@ -226,18 +227,16 @@ function avatarFor(name){
   return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
 }
 function render(hot){
-  const list=Object.values(P).sort((a,b)=>b.points-a.points);
-  const visible=[];
-  const shown=Math.min(8,list.length);
-  for(let i=0;i<shown;i++)visible.push(list[(rotationOffset+i)%list.length]);
-  if(pinnedJoin&&!visible.some(p=>p.name===pinnedJoin)&&P[pinnedJoin])visible[shown-1]=P[pinnedJoin];
+  const list=Object.values(P).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name,'ar'));
+  const champion=list[0];
+  const visible=list.slice(1,9);
   const g=$('grid');g.innerHTML='';
   for(let i=0;i<8;i++){
     const p=visible[i],d=document.createElement('div');
     if(p){
       d.className='slot full'+(i===0?' first':'')+(p.name===hot?' pop':'');
       if(!seen[p.name]){seen[p.name]=1;d.classList.add('enter')}
-      d.innerHTML='<span class="rk">'+(i===0?'👑':'#'+(i+1))+'</span><div class="av"></div><div class="nm"></div><div class="pt">⭐ '+p.points+'</div><div class="pb2"><i style="width:'+Math.round(p.points/list[0].points*100)+'%"></i></div>';
+      d.innerHTML='<span class="rk">#'+(i+2)+'</span><div class="av"></div><div class="nm"></div><div class="pt">⭐ '+p.points+'</div><div class="pb2"><i style="width:'+Math.round(p.points/(champion?.points||1)*100)+'%"></i></div>';
       const im=document.createElement('img');im.alt='';im.onerror=()=>{im.onerror=null;im.src=avatarFor(p.name)};im.src=p.avatar||avatarFor(p.name);d.querySelector('.av').appendChild(im);
       d.querySelector('.nm').textContent=p.name;
     }else{
@@ -246,7 +245,7 @@ function render(hot){
     }
     g.appendChild(d);
   }
-  const t=list[0],tb=$('top');
+  const t=champion,tb=$('top');
   if(t){
     tb.style.display='flex';
     $('tn').textContent=t.name;
@@ -258,7 +257,7 @@ function render(hot){
       lastLead=t.name;tb.classList.remove('pop');void tb.offsetWidth;tb.classList.add('pop');
     }
   }else{tb.style.display='none';lastLead=null}
-  $('wait').textContent=Math.max(0,list.length-8);
+  $('wait').textContent=Math.max(0,list.length-9);
   $('hearts').textContent=hearts;
 }
 
@@ -266,15 +265,7 @@ document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{
   if(real){$('status').textContent='● الوضع الحقيقي: بانتظار الجسر...';return}
   ArenaEvent({type:b.dataset.t,user:$('u').value});
 });
-$('reset').onclick=()=>{P={};hearts=0;save();$('status').textContent='● جولة جديدة';render()};
-setInterval(()=>{
-  const total=Object.keys(P).length;
-  if(total>8){
-    rotationOffset=(rotationOffset+8)%total;
-    $('status').textContent='● 🔄 تبديل الخانات — فرصة جديدة للمشاركين';
-    render();
-  }
-},ROTATION_MS);
+$('reset').onclick=()=>{P={};hearts=0;eventIds.clear();save();$('status').textContent='● جولة جديدة';render()};
 $('mode').onclick=()=>{
   real=!real;
   $('mode').textContent=real?'بث حقيقي 🔴':'بث تجريبي 🟢';

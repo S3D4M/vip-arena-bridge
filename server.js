@@ -56,10 +56,13 @@ function who(u) {
   return { user: name, avatar };
 }
 let lastJoin = 0;
-function emit(type, u, count) {
+function emit(type, u, count, eventId) {
   if (type === 'join') { const n = Date.now(); if (n - lastJoin < 300) return; lastJoin = n; } // منع الإغراق
+  if (!['join','comment','like','share','follow','gift'].includes(type)) return;
   const e = Object.assign({ type }, who(u));
-  if (count > 1) e.count = Math.min(count, 500);
+  const n = Number.isFinite(Number(count)) ? Math.max(1, Math.min(Math.floor(Number(count)), 500)) : 1;
+  if (n > 1) e.count = n;
+  if (eventId !== undefined && eventId !== null && String(eventId).length < 200) e.id = String(eventId);
   broadcast({ k: 'event', e });
 }
 
@@ -77,15 +80,15 @@ async function start() {
     conn.on(ControlEvent.DISCONNECTED, () => { setNet(false, 'انقطع الاتصال، إعادة المحاولة…'); scheduleRetry(); });
     conn.on(WebcastEvent.STREAM_END, () => { setNet(false, 'انتهى البث'); scheduleRetry(); });
     conn.on(ControlEvent.ERROR, e => log('خطأ:', (e && e.message) || e));
-    conn.on(WebcastEvent.CHAT, d => emit('comment', d.user));
-    conn.on(WebcastEvent.MEMBER, d => emit('join', d.user));
-    conn.on(WebcastEvent.LIKE, d => emit('like', d.user, d.likeCount || 1));
-    conn.on(WebcastEvent.SHARE, d => emit('share', d.user));
-    conn.on(WebcastEvent.FOLLOW, d => emit('follow', d.user));
+    conn.on(WebcastEvent.CHAT, d => emit('comment', d.user, 1, d.eventId || d.msgId));
+    conn.on(WebcastEvent.MEMBER, d => emit('join', d.user, 1, d.eventId || d.msgId));
+    conn.on(WebcastEvent.LIKE, d => emit('like', d.user, d.likeCount || 1, d.eventId || d.msgId));
+    conn.on(WebcastEvent.SHARE, d => emit('share', d.user, 1, d.eventId || d.msgId));
+    conn.on(WebcastEvent.FOLLOW, d => emit('follow', d.user, 1, d.eventId || d.msgId));
     conn.on(WebcastEvent.GIFT, d => {
       const gt = d.giftDetails && d.giftDetails.giftType;
       if (gt === 1 && !d.repeatEnd) return;          // سلسلة هدايا لم تنتهِ بعد
-      emit('gift', d.user, d.repeatCount || 1);
+      emit('gift', d.user, d.repeatCount || 1, d.eventId || d.msgId || d.giftId);
     });
     const st = await conn.connect();
     log('تم الاتصال بغرفة البث', st && st.roomId);
