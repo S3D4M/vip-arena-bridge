@@ -149,7 +149,7 @@ const $=id=>document.getElementById(id);
 let AC=null,sndOn=true,lastLike=0,seen={},eventIds=new Set(),tEl=null,en=0,frenzy=false,fzT=null,lastMs=0;
 function noise(d,v){const a=ac();if(!a||!sndOn)return;const n=Math.floor(a.sampleRate*d),b=a.createBuffer(1,n,a.sampleRate),x=b.getChannelData(0);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*(1-i/n);const s=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();f.type='bandpass';f.frequency.value=1800;s.buffer=b;g.gain.value=v;s.connect(f);f.connect(g);g.connect(a.destination);s.start()}
 function toast(html){if(tEl)tEl.remove();const d=document.createElement('div');d.className='wel';d.innerHTML=html;document.body.appendChild(d);tEl=d;setTimeout(()=>{if(tEl===d){d.remove();tEl=null}},2500)}
-function welcome(name,av){toast('<img alt="" src="'+(av||avatarFor(name))+'"><span>🎉 انضم <b></b></span>');tEl.querySelector('b').textContent=name;try{if(!speechSynthesis.speaking)say('أهلاً '+name)}catch(e){}}
+  function welcome(name,av){toast((av?'<img alt="" src="'+av+'">':'')+'<span>🎉 انضم <b></b></span>');tEl.querySelector('b').textContent=name;try{if(!speechSynthesis.speaking)say('أهلاً '+name)}catch(e){}}
 function milestone(){sfx('cheer');sfx('win');flash();fx('❤️',14);toast('❤️ وصلنا '+hearts+' لايك! كمّلوا!')}
 function addEn(v){if(frenzy)return;en=Math.min(100,en+(v||0));$('eni').style.width=en+'%';if(en>=100)startFrenzy()}
 function startFrenzy(){frenzy=true;document.body.classList.add('fz');sfx('frenzy');flash();fx('⚡',12);toast('⚡ وضع الحماس! النقاط ×2');say('وضع الحماس! النقاط مضاعفة');let k=0;fzT=setInterval(()=>{tone(90,.18,'sine',.35,0,40);if(k%2)tone(1800,.04,'square',.05);if(++k>=16)endFrenzy()},500)}
@@ -221,14 +221,7 @@ function endChal(ok){
   render(ok&&lead?lead.name:undefined);
 }
 
-const EM=['😎','🦁','👑','🔥','🐯','🦅','🌹','⚡','🐺','💎','🎯','🦋'];
-function avatarFor(name){
-  let h=0;for(const c of name)h=(h*31+c.charCodeAt(0))>>>0;
-  const a=h%360,b=(a+60)%360,em=EM[h%EM.length];
-  const svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="hsl('+a+',80%,55%)"/><stop offset="1" stop-color="hsl('+b+',80%,35%)"/></linearGradient></defs><rect width="100" height="100" fill="url(#g)"/><text x="50" y="68" font-size="52" text-anchor="middle">'+em+'</text></svg>';
-  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-}
-function render(hot){
+  function render(hot){
   const list=Object.values(P).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name,'ar'));
   const champion=list[0];
   const visible=list.slice(1,9);
@@ -239,7 +232,7 @@ function render(hot){
       d.className='slot full'+(i===0?' first':'')+(p.name===hot?' pop':'');
       if(!seen[p.name]){seen[p.name]=1;d.classList.add('enter')}
       d.innerHTML='<span class="rk">#'+(i+2)+'</span><div class="av"></div><div class="nm"></div><div class="pt">⭐ '+p.points+'</div><div class="pb2"><i style="width:'+Math.round(p.points/(champion?.points||1)*100)+'%"></i></div>';
-      const im=document.createElement('img');im.alt='';im.onerror=()=>{im.onerror=null;im.src=avatarFor(p.name)};im.src=p.avatar||avatarFor(p.name);d.querySelector('.av').appendChild(im);
+      if(p.avatar){const im=document.createElement('img');im.alt='';im.onerror=()=>{im.remove()};im.src=p.avatar;d.querySelector('.av').appendChild(im)}
       d.querySelector('.nm').textContent=p.name;
     }else{
       d.className='slot';
@@ -252,8 +245,8 @@ function render(hot){
     tb.style.display='flex';
     $('tn').textContent=t.name;
     $('tp').textContent='⭐ '+t.points+' نقطة — تابعوا حسابه وادعموه';
-    const ti=document.createElement('img');ti.alt='';ti.onerror=()=>{ti.onerror=null;ti.src=avatarFor(t.name)};ti.src=t.avatar||avatarFor(t.name);
-    $('tav').replaceChildren(ti);
+    $('tav').replaceChildren();
+    if(t.avatar){const ti=document.createElement('img');ti.alt='';ti.onerror=()=>{ti.remove()};ti.src=t.avatar;$('tav').appendChild(ti)}
     if(t.name!==lastLead){
       if(lastLead){sfx('lead');say(t.name+' صار المتصدر، تابعوه')}if(lastLead)$('status').textContent='● 👑 '+t.name+' صار المتصدر — تابعوه!';
       lastLead=t.name;tb.classList.remove('pop');void tb.offsetWidth;tb.classList.add('pop');
