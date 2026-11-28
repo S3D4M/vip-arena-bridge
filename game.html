@@ -224,14 +224,14 @@ function endChal(ok){
   function render(hot){
   const list=Object.values(P).sort((a,b)=>b.points-a.points||a.name.localeCompare(b.name,'ar'));
   const champion=list[0];
-  const visible=list.slice(1,9);
+  const visible=list.slice(0,8);
   const g=$('grid');g.innerHTML='';
   for(let i=0;i<8;i++){
     const p=visible[i],d=document.createElement('div');
     if(p){
       d.className='slot full'+(i===0?' first':'')+(p.name===hot?' pop':'');
       if(!seen[p.name]){seen[p.name]=1;d.classList.add('enter')}
-      d.innerHTML='<span class="rk">#'+(i+2)+'</span><div class="av"></div><div class="nm"></div><div class="pt">⭐ '+p.points+'</div><div class="pb2"><i style="width:'+Math.round(p.points/(champion?.points||1)*100)+'%"></i></div>';
+      d.innerHTML='<span class="rk">#'+(i+1)+'</span><div class="av"></div><div class="nm"></div><div class="pt">⭐ '+p.points+'</div><div class="pb2"><i style="width:'+Math.round(p.points/(champion?.points||1)*100)+'%"></i></div>';
       if(p.avatar){const im=document.createElement('img');im.alt='';im.onerror=()=>{im.remove()};im.src=p.avatar;d.querySelector('.av').appendChild(im)}
       d.querySelector('.nm').textContent=p.name;
     }else{
@@ -252,7 +252,7 @@ function endChal(ok){
       lastLead=t.name;tb.classList.remove('pop');void tb.offsetWidth;tb.classList.add('pop');
     }
   }else{tb.style.display='none';lastLead=null}
-  $('wait').textContent=Math.max(0,list.length-9);
+  $('wait').textContent=Math.max(0,list.length-8);
   $('hearts').textContent=hearts;
 }
 
